@@ -19,141 +19,157 @@ void UnidadeControle(int IR, int *sc){
 	switch(*sc) {
 		
 		case 0:				 //Inicializador
-			*sc = 0x44020;	 //0
+			*sc = 0x44020;	 //Estado 0
 		break;
 
-		case 0x44020:		 //0
-			*sc = 0x30;		 //1
+		case 0x44020:		 //Estado 0    
+			*sc = 0x30;		 //Estado 1  ... Estado0->Estado1
 		break;
 
-		case 0x30:			//1
+		case 0x30:			//Estado 1
 			
-			//Tabela de despacho
 			/*
-				2, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16
+
+			Tabela de despacho(fetch) de acordo com o microcódigo 
+			
+			decode 		     (2)
+			exec   		     (6)
+			branch 		     (8)
+			jump   		 	 (9)								  
+			bne		0x05	 (10)
+			bltz	0x01	 (11)
+			move	0X3F	 (12)
+			lui		0X0F	 (13)
+			ori		0X0D	 (14)
+			andi	0X0C	 (15)
+			slti	0X0A	 (16)
+			
 			*/
+		
 			if(opcode == 0){
-				*sc = 0x88;	//6
+				*sc = 0x88;	//Estado 6 - Se for Tipo-R    --- Estado1 -> Estado6
 			}
 			else if(opcode == 0x2B || opcode == 0x23){
-				*sc = 0x18;	//2
+				*sc = 0x18;	//Estado 2 - Se for lw/sw  	   ---- Estado1 -> Estado2
 			}
 			else{
 				switch(opcode){
-					case 0x4:	//BEQ
-						*sc = 0xD0C;	//8
-					break;
+					case 0x4:	
+						*sc = 0xD0C;	//Estado 8 beq 	   --- Estado1 -> Estado8
+						break;
 
-					case 0x2:	//j
-						*sc = 0x1A00;	//9
-					break;
+					case 0x2:	
+						*sc = 0x1A00;	//Estado 9 jump(j) --- Estado1 -> Estado9
+						break;
 
-					case 0x5:	//BNE
-						*sc = 0xD08;	//10
-					break;
+					case 0x5:	
+						*sc = 0xD08;	//Estado 10 bne    --- Estado1 -> Estado10
+						break;
 
-					case 0x1:	//BLTZ
-						*sc = 0xCF4;	//11
-					break;
+					case 0x1:	
+						*sc = 0xCF4;	//Estado 11 bltz   --- Estado1 -> Estado11
+						break;
 
-					case 0x3f:	//move
-						*sc = 0x10002;	//12
-					break;
+					case 0x3f:	
+						*sc = 0x10002;	//Estado 12 move   --- Estado1 -> Estado12
+						break;
 
-					case 0x0f:	//LUI
-						*sc = 0x30002;	//13
-					break;
+					case 0x0f:	
+						*sc = 0x30002;	//Estado 13 lui    --- Estado1 -> Estado13
+						break;
 
-					case 0x0d:	//ORI
-						*sc = 0x58;	//14
-					break;
+					case 0x0d:	
+						*sc = 0x58;	    //Estado 14 ori	   --- Estado1 -> Estado14
+						break;
 
-					case 0x0c:	//ANDI
-						*sc = 0x198;	//15
-					break;
+					case 0x0c:	
+						*sc = 0x198;	//Estado 15 andi   --- Estado1 -> Estado15
+						break;
 
-					case 0x0a:	//SLTI
-						*sc = 0x158;	//16
-					break;
-
+					case 0x0a:	
+						*sc = 0x158;	//Estado 16 slti   ---Estado1 -> Estado16
+						break;
 				}
 				
 			}
 		break;
 
-		case 0x18:	//2
-			//Tabela de despacho
+		case 0x18:	//Estado2 (lw ou sw)
 			/*
-				opcode 0x2B -> 3
-				opcode 0x23 -> 5
-			*/
-			if(opcode == 0x23){
-				*sc = 0x6000;	//3
+			
+			Tabela de despacho(fetch) de acordo com o microcódigo 
+
+				lw 	0x2B 	(3)
+				sw 	0x23 	(5)
+				
+			*/	
+			if(opcode == 0x23) {
+				*sc = 0x6000;	//Estado2 -> Estado3
 			}
-			else{
-				*sc = 0xA000;	//5
+			else {
+				*sc = 0xA000;	//Estado2 -> Estado5
 			}
+			break;
 
-		break;
+		case 0x6000:	
+			*sc = 0x20002; 	   //Estado3 -> Estado4
+			break;
 
-		case 0x6000:	//3
-			*sc = 0x20002;	//4
-		break;
+		case 0x20002:	
+			*sc = 0x44020;	   //Estado4 -> Estado0
+			break;
 
-		case 0x20002:	//4
-			*sc = 0x44020;	//0
-		break;
+		case 0xA000:	
+			*sc = 0x44020;	   //Estado5 -> Estado0
+			break;
 
-		case 0xA000:	//5
-			*sc = 0x44020;	//0
-		break;
+		case 0x88:			   //Estado6 -> Estado7
+			*sc = 0x3;	
+			break;
 
-		case 0x88:	//6
-			*sc = 0x3;	//7
-		break;
+		case 0x3:	
+			*sc = 0x44020;	   //Estado7 -> Estado0
+			break;
 
-		case 0x3:	//7
-			*sc = 0x44020;	//0
-		break;
+		case 0xD0C:		
+			*sc = 0x44020;    //Estado8 -> Estado0
+			break;
 
-		case 0xD0C:	//8
-			*sc = 0x44020;	//0
-		break;
+		case 0x1A00:	 
+			*sc = 0x44020;	  //Estado9 -> Estado0
+			break;
 
-		case 0x1A00:	//9
-			*sc = 0x44020;	//0
-		break;
+		case 0xD08:	
+			*sc = 0x44020;	 //Estado10 -> Estado0
+			break;
 
-		case 0xD08:	//10
-			*sc = 0x44020;	//0
-		break;
+		case 0xCF4:	
+			*sc = 0x44020;	////Estado11 -> Estado0
+			break;
 
-		case 0xCF4:	//11
-			*sc = 0x44020;	//0
-		break;
+		case 0x10002:	
+			*sc = 0x44020;	//Estado12 -> Estado0
+			break;
 
-		case 0x10002:	//12
-			*sc = 0x44020;	//0
-		break;
+		case 0x30002:		//Estado13 -> Estado0
+			*sc = 0x44020;	
+			break;
 
-		case 0x30002:	//13
-			*sc = 0x44020;	//0
-		break;
+		case 0x58:		   //Estado14 -> Estado7
+			*sc = 0x3;	
+			break;
 
-		case 0x58:	//14
-			*sc = 0x3;	//7
-		break;
+		case 0x198:	      //Estado15 -> Estado7
+			*sc = 0x3;	
+			break;
 
-		case 0x198:	//15
-			*sc = 0x3;	//7
-		break;
-
-		case 0x158:	//16
-			*sc = 0x3;	//7
-		break;
+		case 0x158:	     //Estado16 -> Estado7
+			*sc = 0x3;	
+			break;
 
 	}
 
+	//teste
 	printf("estado: %d\n", *sc);
 
 }
@@ -167,10 +183,10 @@ void Busca_Instrucao(int sc, int PC, int ALUOUT, int IR, int A, int B, int *PCne
 		if((sc & 0x2000) == 0) {		 //Se IorD == 0, a memória é acessada na posição de PC
 			*IRnew = memoria[PC/4];
 		}
-		else{						//Se IorD == 1, a memória é acessada na posição de ALUout
+		else{							//Se IorD == 1, a memória é acessada na posição de ALUout
 			*IRnew = memoria[ALUOUT/4];
 		}
-		*MDRnew = *IRnew << 16;
+		*MDRnew = *IRnew << 16;			//????
 		*MDRnew = *MDRnew >> 16;
 		ula(PC, 0x4, 0x2, PCnew, &zero, &overflow);
 	}
@@ -182,7 +198,7 @@ void Decodifica_BuscaRegistrador(int sc, int IR, int PC, int A, int B, int *Anew
 	
 	char zero, overflow;
 	
-	if(sc==0x30) {	//Realiza a 
+	if(sc==0x30) {	//Se Estado1 (decode)
 		if(IR == 0) {
 			loop = 0;
 			printf("HALT!\n");
@@ -223,29 +239,30 @@ void Execucao_CalcEnd_Desvio(int sc, int A, int B, int IR, int PC, int ALUOUT, i
 		switch(op) {
 			case 0x20:	//add
 				ula(reg[A], reg[B], 0x2, ALUOUTnew, &zero, &overflow);
-			break;
+				break;
 
 			case 0x22:	//sub
 				ula(reg[A], reg[B], 0x6, ALUOUTnew, &zero, &overflow);
-			break;
+				break;
 
 			case 0x24:	//and
 				ula(reg[A], reg[B], 0x0, ALUOUTnew, &zero, &overflow);
-			break;
+				break;
 
 			case 0x25:	//or
 				ula(reg[A], reg[B], 0x1, ALUOUTnew, &zero, &overflow);
-			break;
+				break;
 
 			case 0x2a:	//slt
 				ula(reg[A], reg[B], 0x7, ALUOUTnew, &zero, &overflow);
-			break;
+				break;
 		}
 	}
-	else if(sc == 0x18){	//lw ou sw
-		
+
+	else if(sc == 0x18) {	//lw ou sw
 		ula(reg[A], VI, 0x2, ALUOUTnew, &zero, &overflow);	//Atualiza o valor de ALUOUT
 	}
+
 	else if(sc == 0xCF4) {	//BLTZ
 		ula(reg[A], 0, 0x7, ALUOUTnew, &zero, &overflow);
 		
@@ -253,6 +270,7 @@ void Execucao_CalcEnd_Desvio(int sc, int A, int B, int IR, int PC, int ALUOUT, i
 			*PCnew = ALUOUT;
 		}
 	}
+
 	else if(sc == 0xD0C) {	//BEQ
 		ula(reg[A], reg[B], 0x6, ALUOUTnew, &zero, &overflow);
 		
@@ -260,32 +278,37 @@ void Execucao_CalcEnd_Desvio(int sc, int A, int B, int IR, int PC, int ALUOUT, i
 			*PCnew = ALUOUT;
 		}
 	}
+
 	else if(sc == 0xD08) {	//BNE
-		
 		ula(reg[A], reg[B], 0x6, ALUOUTnew, &zero, &overflow);
-		
 		if(zero == 0) {
 			*PCnew = ALUOUT;
 		}
 	}
+
 	else if(sc == 0x1A00) {	//j
 		
 		VI = IR&0x3ffffff;	//realiza a extensão de sinal
 		VI = VI << 2;
 		*PCnew = VI;
 	}
+
 	else if(sc == 88) {		//ori
 		ula(reg[A], VI, 0x1, ALUOUTnew, &zero, &overflow);
 	}
+
 	else if(sc == 0x198) {	//andi
 		ula(reg[A], VI, 0x0, ALUOUTnew, &zero, &overflow);
 	}
+
 	else if(sc == 0x158) {	//slti
 		ula(reg[A], VI, 0x7, ALUOUTnew, &zero, &overflow);
 	}
+
 	else if(sc == 0x10002) {	//move
 		reg[A] = reg[B];
 	}
+
 	else if(sc == 0x30002) {	//lui
 		reg[B] = IR << 16;
 	}
